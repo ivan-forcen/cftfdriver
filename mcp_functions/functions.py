@@ -36,5 +36,7 @@ class Mcp:
         self.SPI_CSEnable()
         self.d.write_cmd_bytes(0x10,(0b1100,a,data,crc))
         self.SPI_CSDisable()
+
+    """def getQueueStatus()"""
     
     
