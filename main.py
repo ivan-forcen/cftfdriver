@@ -1,6 +1,6 @@
 import sys, time, ftd2xx as ftd
 from ftd_functions import Ftdi
-from mcp_functions import Mcp
+#from mcp_functions import Mcp
 
 if __name__ == "__main__":
     dev=Ftdi()

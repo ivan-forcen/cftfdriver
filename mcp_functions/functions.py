@@ -1,6 +1,7 @@
 from ftd_functions import Ftdi
-from constants import*
-from classes import*
+#from constants import*
+#from classes import*
+
 """class Mcp:
     def __init__(self,dev):
         dev=Ftdi()
