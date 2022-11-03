@@ -1,5 +1,5 @@
 from ftd_functions import Ftdi
-class Mcp:
+"""class Mcp:
     def __init__(self,dev):
         dev=Ftdi()
         self.d=dev
@@ -45,12 +45,29 @@ class Mcp:
     
     def getOpMode(self):
         self.d.SPI_CSEnable('a')
-        state = self.read(0x03,1)
-        return state[5:7]
+        state = self.read(0x025,1)
+        return state
 
     def setOpMode(self,mode):#only possible in configuration mode, mode int 0 to 7
         self.d.SPI_CSEnable('a')
+        #0:normal can fd mode (supports can fd and can 2.0 frames)
+        #1:sleep mode
+        #2:internal loopback mode
+        #3:listen only mode
+        #4:configuration mode
+        #5:external loopback mode
+        #6:normal can 2.0 mode, error on fd frames
+        #7:restricted operation mode
         self.write(0x030,mode)
         self.d.SPI_CSDisable('a')
-    
+    def txQEn(self):
+
+    def storeTxEvFifo():
+
+    def canBusy():
+        if self.read(0x013,1)==[1]:
+            return True
+        else:
+            return False
+    """
     
