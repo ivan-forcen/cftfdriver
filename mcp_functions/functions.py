@@ -1,15 +1,14 @@
-from ftd_functions import Ftdi
-#from constants import*
-#from classes import*
+import ft
+from constants import *
+from classes import *
 
-"""class Mcp:
+class Mcp:
     def __init__(self,dev):
-        dev=Ftdi()
         self.d=dev
     #resets the mcp chip
     def reset(self):
         self.d.SPI_CSEnable('a')
-        self.d.write_cmd_bytes(0x10,(0b0000,0x000))
+        self.d.write_cmd_bytes(0x11,(0b0000,0x000))
         self.d.SPI_CSDisable('a')
     #reads data from specific address
     def read(self,a,length):
@@ -64,13 +63,13 @@ from ftd_functions import Ftdi
         self.write(0x030,mode)
         self.d.SPI_CSDisable('a')
     def txQEn(self):
-
-    def storeTxEvFifo():
-
-    def canBusy():
+        self.write(0x024,1)
+    def txQdis(self):
+        self.write(0x024,0)
+    def canBusy(self):
         if self.read(0x013,1)==[1]:
             return True
         else:
             return False
-    """
+
     
