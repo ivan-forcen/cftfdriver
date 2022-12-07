@@ -3,6 +3,9 @@ from mcp_functions import ft
 from mcp_functions import mcplib
 from mcp_functions.constants import *
 
+#bbus = SPI0
+#abus = SPI1
+
 dicc = {NORMAL_MODE:'NORMAL_MODE',
     SLEEP_MODE:'SLEEP_MODE',
     INTERNAL_LOOPBACK_MODE: 'INTERNAL_LOOPBACK_MODE',
@@ -15,10 +18,16 @@ dicc = {NORMAL_MODE:'NORMAL_MODE',
 }
 
 if __name__ == "__main__":  
-    ft4232h = ft.FT4232H()
-    spi = ft.SPI(ft4232h,cs=3,max_speed_hz=1000000,mode=0,bitorder=ft.MSBFIRST)
-    spi.ftdi.loopback()
-    print(spi.transfer((0x90,0xf3),1))
+    ft4232ha = ft.FT4232H(index=0)
+    ft4232hb = ft.FT4232H(index=1)
+    spi1 = ft.SPI(ft4232ha,cs=3,max_speed_hz=1000000,mode=0,bitorder=ft.MSBFIRST)
+    spi0 = ft.SPI(ft4232hb,cs=3,max_speed_hz=1000000,mode=0,bitorder=ft.MSBFIRST)
+    spi1.ftdi.loopback()
+    print(spi1.transfer((0x90,0xf3)))
+    spi0.ftdi.loopback()
+    print(spi0.transfer((0x90,0xf3)))
+    spi0.ftdi.dread(100)
+    spi1.ftdi.dread(100)
 
 #     cINSTRUCTION_READ = 0x03
 #     cINSTRUCTION_WRITE = 0x02
