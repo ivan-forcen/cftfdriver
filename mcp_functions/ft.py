@@ -169,12 +169,12 @@ class SPI(object):
         command = 0x10|(self.lsbfirst<<3)|self.write_clock_ve
         length = len(data)-1
         len_low = length&0xFF
-        self.ftdi.dwrite((command,len_low))
+        self.ftdi.dwrite((command,len_low,0))
         self.ftdi.dwrite(data)
     def read(self,length):
         command = 0x20|(self.lsbfirst<<3)|(self.read_clock_ve<<2)
         len_low = (length-1)&0xFF
-        self.ftdi.dwrite((command,len_low,0x87))
+        self.ftdi.dwrite((command,len_low,0,0x87))
         return self.ftdi.dread(length)
     def transfer(self,data):
         command = 0x30|(self.lsbfirst<<3)|(self.read_clock_ve<<2)|self.write_clock_ve
@@ -184,7 +184,7 @@ class SPI(object):
         if (rbuffer>0 and self.ftdi.d.status ==1):
             s=self.ftdi.dread(rbuffer)
         self._assert_cs()
-        self.ftdi.dwrite((command,len_low))
+        self.ftdi.dwrite((command,len_low,0))
         self.ftdi.dwrite(data)
         self.ftdi.d.write('\x87')
         self._deassert_cs()
