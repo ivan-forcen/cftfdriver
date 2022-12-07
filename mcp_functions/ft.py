@@ -22,7 +22,7 @@ class FT4232H():
         self._mpsse_sync()
         rbuffer = self.d.getQueueStatus()
         if (rbuffer>0 and self.d.status ==1):
-            s=self.dread(rbuffer)
+            s=self.dreadarr(rbuffer)
         self.d.write('\x80\x00\x00')
         self._direction = 0x00
         self._level = 0x00
@@ -34,6 +34,9 @@ class FT4232H():
         return self.d.setBitMode(bits, mode)
     #Read byte data into list of integers
     def dread(self,nbytes):
+        s = self.d.read(nbytes)
+        return s
+    def dreadarr(self,nbytes):
         s = self.d.read(nbytes)
         return [ord(c) for c in s] if type(s) is str else list(s)
     #Write list of integers as byte data
@@ -56,7 +59,7 @@ class FT4232H():
         tries=0
         sync=False
         while not sync:
-            data = self.dread(2)
+            data = self.dreadarr(2)
             if data == [250,171]:
                 sync=True
             tries+=1
@@ -64,7 +67,7 @@ class FT4232H():
                 raise RuntimeError('Could not synchornize with FT4232H')
     def mpsse_read_gpio(self):
         self.d.write('\x81')
-        return self.dread(1)
+        return self.dreadarr(1)
     def mpsse_gpio(self):
         level_low = self._level & 0xFF
         dir_low = self._direction & 0xFF
@@ -128,7 +131,7 @@ class SPI(object):
         self.set_bit_order(bitorder)
         rbuffer = self.ftdi.d.getQueueStatus()
         if (rbuffer>0 and self.ftdi.d.status ==1):
-            s=self.ftdi.dread(rbuffer)
+            s=self.ftdi.dreadarr(rbuffer)
     def _assert_cs(self):
         if self._cs is not None:
             self.ftdi.output(self._cs,0)
@@ -165,26 +168,41 @@ class SPI(object):
         else:
             raise ValueError('Order must be MSBFIRST or LSBFIRST.')
     
-    def write(self,data):
+    def write(self,data,bus):
         command = 0x10|(self.lsbfirst<<3)|self.write_clock_ve
         length = len(data)-1
-        len_low = length&0xFF
-        self.ftdi.dwrite((command,len_low,0))
+        if bus==0:
+            len_low = length&0xFF
+            len_high=0
+        else:
+            len_high = length&0xFF
+            len_low=0
+        self.ftdi.dwrite((command,len_low,len_high))
         self.ftdi.dwrite(data)
-    def read(self,length):
+    def read(self,length,bus):
         command = 0x20|(self.lsbfirst<<3)|(self.read_clock_ve<<2)
-        len_low = (length-1)&0xFF
-        self.ftdi.dwrite((command,len_low,0,0x87))
+        if bus==0:
+            len_low = length&0xFF
+            len_high=0
+        else:
+            len_high = length&0xFF
+            len_low=0
+        self.ftdi.dwrite((command,len_low,len_high,0x87))
         return self.ftdi.dread(length)
-    def transfer(self,data):
+    def transfer(self,data,bus):
         command = 0x30|(self.lsbfirst<<3)|(self.read_clock_ve<<2)|self.write_clock_ve
         length = len(data)
-        len_low = (length-1)&0xFF
+        if bus==0:
+            len_low = length&0xFF
+            len_high=0
+        else:
+            len_high = length&0xFF
+            len_low=0
         rbuffer = self.ftdi.d.getQueueStatus()
         if (rbuffer>0 and self.ftdi.d.status ==1):
-            s=self.ftdi.dread(rbuffer)
+            s=self.ftdi.dreadadd(rbuffer)
         self._assert_cs()
-        self.ftdi.dwrite((command,len_low,0))
+        self.ftdi.dwrite((command,len_low,len_high))
         self.ftdi.dwrite(data)
         self.ftdi.d.write('\x87')
         self._deassert_cs()
