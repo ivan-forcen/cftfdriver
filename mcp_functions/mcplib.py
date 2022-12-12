@@ -788,6 +788,8 @@ class CANFD_SPI(ft.SPI):
         else:
             return CAN_DLC_dict[dlc]
 
+    #----------------------------------------------------------------------------------
+
     def transmitChannelLoad(self, nbytes, flush, txd):
         address = cREGADDR_CiFIFOCON + (self.txchannel * CiFIFO_OFFSET)
         fifoReg = [int(w) for w in self.readWordArray(address, 3)]
