@@ -3,6 +3,8 @@ from mcp_functions import ft
 from mcp_functions import mcplib
 from mcp_functions.constants import *
 
+#ftd functions phased out/ not needed
+
 #bbus = SPI0
 #abus = SPI1
 
