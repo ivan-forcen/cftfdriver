@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # print(spi1.ftdi.dread(100))
 
     ft4232hb = ft.FT4232H(index=0)
-    spi0 = ft.SPI(ft4232hb,cs=3,max_speed_hz=2000000,mode=0,bitorder=ft.MSBFIRST)
+    spi0 = ft.SPI(ft4232hb,cs=3,max_speed_hz=1000000,mode=0,bitorder=ft.MSBFIRST)
     spi0.ftdi.loopback()
     # print(spi0.transfer((0x90,0xf3)))
     # print(spi0.ftdi.dread(100))

@@ -4,6 +4,12 @@ from mcp_functions.classes import *
 from random import randint
 import binascii
 
+'''
+driver is a derivation of a python 2.7 mcp2517fd library for communication with FT232H (https://github.com/jcf9410/canfdlib)
+converted for python 3, and ft4232h.
+Different FT wrapper library used
+'''
+
 def set_bit(v, index, x):
     """Set the index:th bit of v to 1 if x is truthy, else to 0, and return the new value."""
     mask = 1 << index  # Compute mask, an integer with just bit 'index' set.
@@ -15,7 +21,7 @@ def set_bit(v, index, x):
 class CANFD_SPI(ft.SPI):
     def __init__(self,ftdi,cs,max_speed_hz,mode,bitorder, SPI_DEFAULT_BUFFER_LENGTH,SPI_MAX_BUFFER_LENGTH,SPI_BAUDRATE,verbose=False):
         super(CANFD_SPI, self).__init__(ftdi, cs, max_speed_hz, mode, bitorder)
-    
+        #initialise private variables
         self.SPI_DEFAULT_BUFFER_LENGTH = SPI_DEFAULT_BUFFER_LENGTH
         self.SPI_MAX_BUFFER_LENGTH = SPI_MAX_BUFFER_LENGTH
         self.SPI_BAUDRATE = SPI_BAUDRATE
@@ -101,6 +107,8 @@ class CANFD_SPI(ft.SPI):
         self.writeByte(address, byte)
 
     # SPI Access Function
+
+    #MCP Reset
     def reset(self):
         spiTransmitBuffer = []
         spiTransmitBuffer.append(cINSTRUCTION_RESET << 4)
@@ -109,6 +117,7 @@ class CANFD_SPI(ft.SPI):
         self.write(spiTransmitBuffer)
         self._deassert_cs()
     
+    #Read byte from mcp
     def readByte(self, address):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_READ << 4) + ((address >> 8) & 0xF))
@@ -118,7 +127,7 @@ class CANFD_SPI(ft.SPI):
         result = self.read(1)
         self._deassert_cs()
         return int(binascii.hexlify(result), 16)
-
+    #Read word from mcp
     def readWord(self, address):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_READ << 4) + ((address >> 8) & 0xF))
@@ -129,7 +138,7 @@ class CANFD_SPI(ft.SPI):
         self._deassert_cs()
         word = 0
         return int(binascii.hexlify(rx), 16)
-
+    #Read byte array from mcp, returns list
     def readByteArray(self, address, length):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_READ << 4) + ((address >> 8) & 0xF))
@@ -140,7 +149,7 @@ class CANFD_SPI(ft.SPI):
         self._deassert_cs()
         result = [byte for byte in response]
         return result
-    
+    #Read words from mcp, returns list
     def readWordArray(self, address, length):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_READ << 4) + ((address >> 8) & 0xF))
@@ -151,7 +160,7 @@ class CANFD_SPI(ft.SPI):
         self._deassert_cs()
         w = [int(rx[i:i + 8], 16) for i in range(0, len(rx), 8)]
         return w
-
+    #writes byte to mcp registers
     def writeByte(self, address, data):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_WRITE << 4) + ((address >> 8) & 0xF))
@@ -160,7 +169,7 @@ class CANFD_SPI(ft.SPI):
         self._assert_cs()
         self.write(spiTransmitBuffer)
         self._deassert_cs()
-
+    #writes word to mcp registers
     def writeWord(self, address, data):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_WRITE << 4) + ((address >> 8) & 0xF))
@@ -172,7 +181,7 @@ class CANFD_SPI(ft.SPI):
         self._assert_cs()
         self.write(spiTransmitBuffer)
         self._deassert_cs()
-
+    #write bytearray to mcp register
     def writeByteArray(self, address, data):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_WRITE << 4) + ((address >> 8) & 0xF))
@@ -181,7 +190,8 @@ class CANFD_SPI(ft.SPI):
         self._assert_cs()
         self.write(spiTransmitBuffer)
         self._deassert_cs()
-
+    #crc - cyclic redundancy check
+    #write byte array with crc
     def writeByteArrayCRC(self, address, data, fromram=False):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_WRITE_CRC << 4) + ((address >> 8) & 0xF))
@@ -197,7 +207,7 @@ class CANFD_SPI(ft.SPI):
         self._assert_cs()
         self.write(spiTransmitBuffer)
         self._deassert_cs()
-
+    #write word array
     def writeWordArray(self, address, data):
         spiTransmitBuffer = []
         spiTransmitBuffer.append((cINSTRUCTION_WRITE << 4) + ((address >> 8) & 0xF))
@@ -261,6 +271,7 @@ class CANFD_SPI(ft.SPI):
             self.writeByte(cREGADDR_CiCON + 3, byte)
             self.opMode = mode
 
+    #read operation mode register, return mode
     def operationModeGet(self):
         d = self.readByte(cREGADDR_CiCON + 2)
         if self.verbose:
@@ -316,13 +327,14 @@ class CANFD_SPI(ft.SPI):
         if self.verbose:
             print("(CONFIG) TX CiFIFOCON word read after config: {}".format(hex(self.readWord(address))))
 
+    #reset transmit channel configuration
     def transmitChannelConfigureObjectReset(self):
         self.txConfig.RTREnable = 0
         self.txConfig.TxPriority = 0
         self.txConfig.TxAttempts = 0b11
         self.txConfig.FifoSize = 0
         self.txConfig.PayLoadSize = 0
-
+    
     def receiveChannelConfigure(self):
         if self.rxchannel == CAN_FIFO_CH0:
             return -100
