@@ -10,6 +10,11 @@ LSBFIRST = 1
 
 _REPEAT_DELAY = 4
 
+'''
+Commands found here:
+http://www.ftdichip.com/Support/Documents/AppNotes/AN_108_Command_Processor_for_MPSSE_and_MCU_Host_Bus_Emulation_Modes.pdf
+'''
+
 class FT4232H():
     def __init__(self,vid=FTDI_VID, pid=FTDI_PID, serial=None,index=0):
         #open index 0,1,2,3 for each channel. For MPSSE: 0=channel A, 1=channel B
